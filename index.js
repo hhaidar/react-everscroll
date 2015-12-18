@@ -1,19 +1,24 @@
+'use strict';
+
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
 var React = require('react');
 //@TODO remove lodash (currently used for throttling)
 var _ = require('lodash');
 var Immutable = require('immutable');
 
 var Everscroll = React.createClass({
+  displayName: 'Everscroll',
 
   /**
    * Baseline State
    * @type {Object}
    */
   _initialState: {
-      listOffset: 0,
-      keyStart: 0,
-      frontHeight: 0,
-      backHeight: 0,
+    listOffset: 0,
+    keyStart: 0,
+    frontHeight: 0,
+    backHeight: 0
   },
 
   /**
@@ -28,7 +33,7 @@ var Everscroll = React.createClass({
   /**
    * reset container scroll to top or bottom depending on direction
    */
-  _initScrollTop: function () {
+  _initScrollTop: function _initScrollTop() {
     this._initScroll = false;
     var containerEl = this.refs.root.getDOMNode();
     if (this.props.reverse) {
@@ -42,36 +47,32 @@ var Everscroll = React.createClass({
    * determine ref name for cursor (middlemost rendered element on the screen)
    * @return {String}
    */
-  _calcCursorRef: function() {
+  _calcCursorRef: function _calcCursorRef() {
+    var _this = this;
 
     //get container
     var containerEl = this.refs.root.getDOMNode();
     var threshold = containerEl.scrollTop + containerEl.clientHeight / 2;
 
-    var clearThreshold = (ref) => {
-      var node = this.refs[ref].getDOMNode();
+    var clearThreshold = function clearThreshold(ref) {
+      var node = _this.refs[ref].getDOMNode();
       //If reverse subtract offsetheight (so threshold relative to bottom of node instead of top)
-      return node.offsetTop > threshold - (this.props.reverse ? node.offsetHeight : 0);
-    }
+      return node.offsetTop > threshold - (_this.props.reverse ? node.offsetHeight : 0);
+    };
 
     var refRange = this._getRefRenderRange();
 
-    var cursorRef =
-          refRange
-            .filter(ref => this.refs[ref])
-            .takeUntil(clearThreshold)
-            .last()
-            ||
-          refRange.first();
+    var cursorRef = refRange.filter(function (ref) {
+      return _this.refs[ref];
+    }).takeUntil(clearThreshold).last() || refRange.first();
 
     return cursorRef;
-
   },
 
   /**
    * determine if new cursor is needed and set if necessary
    */
-  _setCursor: function() {
+  _setCursor: function _setCursor() {
 
     var cursorRef = this._calcCursorRef();
 
@@ -80,7 +81,7 @@ var Everscroll = React.createClass({
     }
 
     this.setState({
-      cursorRef: cursorRef,
+      cursorRef: cursorRef
     });
   },
 
@@ -89,11 +90,11 @@ var Everscroll = React.createClass({
    * Front of list to Back of list
    * @return {Immutable.Seq}
    */
-  _getRefRange: function () {
+  _getRefRange: function _getRefRange() {
     var rangeStart = this.state.listOffset;
     var rangeEnd = rangeStart + Math.min(this.props.renderCount, this.props.rowIndex.length);
 
-    return Immutable.Range(rangeStart, rangeEnd)
+    return Immutable.Range(rangeStart, rangeEnd);
   },
 
   /**
@@ -101,10 +102,10 @@ var Everscroll = React.createClass({
    * Top of container to Bottom of container
    * @return {Immutable.Seq}
    */
-  _getRefRenderRange: function() {
+  _getRefRenderRange: function _getRefRenderRange() {
     var refRange = this._getRefRange();
 
-    return this.props.reverse ? refRange.reverse() : refRange
+    return this.props.reverse ? refRange.reverse() : refRange;
   },
 
   /**
@@ -112,46 +113,50 @@ var Everscroll = React.createClass({
    * @return {Immutable.List}
    */
   //@TODO determine if keys provide any real performance benefit
-  _getKeyList: function() {
+  _getKeyList: function _getKeyList() {
     var keyStart = this.state.keyStart;
     var basicRange = Immutable.Range(0, this.props.renderCount);
 
-    return basicRange.slice(keyStart).toList().concat(basicRange.slice(0, keyStart).toList())
+    return basicRange.slice(keyStart).toList().concat(basicRange.slice(0, keyStart).toList());
   },
 
   /**
    * call renderRowHanlder for given rowIndex value (ID)
    */
-  _renderRow: function(ID, index){
+  _renderRow: function _renderRow(ID, index) {
     return this.props.renderRowHandler(ID, index);
   },
 
-  _onEndReached: function() {
-    setTimeout(this.props.onEndReached, 0)
+  _onEndReached: function _onEndReached() {
+    setTimeout(this.props.onEndReached, 0);
   },
 
   /**
    * determine if render range needs to shift and update state accordingly
    */
-  _handleScroll: function(){
-
-    var {reverse, renderCount, rowIndex} = this.props
-    var {listOffset, keyStart} = this.state
+  _handleScroll: function _handleScroll() {
+    var _props = this.props;
+    var reverse = _props.reverse;
+    var renderCount = _props.renderCount;
+    var rowIndex = _props.rowIndex;
+    var _state = this.state;
+    var listOffset = _state.listOffset;
+    var keyStart = _state.keyStart;
 
     if (rowIndex.length < renderCount) return;
 
-    var cursorRef = this._calcCursorRef()
-    var impliedListOffset = (cursorRef - renderCount / 2) | 0
+    var cursorRef = this._calcCursorRef();
+    var impliedListOffset = cursorRef - renderCount / 2 | 0;
 
-    var minOffset = 0
-    var maxOffset = Math.max(0, rowIndex.length - renderCount)
+    var minOffset = 0;
+    var maxOffset = Math.max(0, rowIndex.length - renderCount);
 
     var adjustedOffset = Math.min(Math.max(impliedListOffset, minOffset), maxOffset);
-    var offsetShift = adjustedOffset - listOffset
-    var adjustedKeyStart = (keyStart + offsetShift) % renderCount
+    var offsetShift = adjustedOffset - listOffset;
+    var adjustedKeyStart = (keyStart + offsetShift) % renderCount;
 
     if (adjustedOffset === maxOffset && offsetShift > 0) {
-      this._onEndReached()
+      this._onEndReached();
     }
 
     var renderRange = this._getRefRenderRange();
@@ -159,19 +164,19 @@ var Everscroll = React.createClass({
 
     //@TODO come up with a better way seed top and bottom spacesrs and maintain consistency during the scroll
     // consider caching rendered row heights rather than approximating
-    var averageHeight = this.refs.renderRows.getDOMNode().scrollHeight / renderRange.count()
+    var averageHeight = this.refs.renderRows.getDOMNode().scrollHeight / renderRange.count();
 
-    var shift = adjustedOffset - listOffset
-    var backSpacerHeight = (rowIndex.length - refRange.last() - 1 - offsetShift) * averageHeight
-    var frontSpacerHeight = (refRange.first() + offsetShift) * averageHeight
+    var shift = adjustedOffset - listOffset;
+    var backSpacerHeight = (rowIndex.length - refRange.last() - 1 - offsetShift) * averageHeight;
+    var frontSpacerHeight = (refRange.first() + offsetShift) * averageHeight;
 
     this.setState({
-        cursorRef: cursorRef,
-        listOffset: adjustedOffset,
-        keyStart: adjustedKeyStart,
-        frontHeight: frontSpacerHeight,
-        backHeight: backSpacerHeight,
-      })
+      cursorRef: cursorRef,
+      listOffset: adjustedOffset,
+      keyStart: adjustedKeyStart,
+      frontHeight: frontSpacerHeight,
+      backHeight: backSpacerHeight
+    });
   },
 
   propTypes: {
@@ -185,102 +190,96 @@ var Everscroll = React.createClass({
     bottomCap: React.PropTypes.object
   },
 
-  getDefaultProps: function() {
+  getDefaultProps: function getDefaultProps() {
     return {
       idKey: 'ID',
-      renderRowHandler: function(ID){
-        return (<div className='row'>{ID}</div>)
+      renderRowHandler: function renderRowHandler(ID) {
+        return React.createElement(
+          'div',
+          { className: 'row' },
+          ID
+        );
       },
       reverse: false,
       renderCount: 30,
       throttle: 16,
       loadBuffer: 30,
-      onEndReached: function () {}
-    }
+      onEndReached: function onEndReached() {}
+    };
   },
 
-  getInitialState: function() {
+  getInitialState: function getInitialState() {
     return this._initialState;
   },
 
-  componentWillReceiveProps: function(nextProps){
-    var oldRowIndex = this.props.rowIndex
-    var newRowIndex = nextProps.rowIndex
+  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+    var oldRowIndex = this.props.rowIndex;
+    var newRowIndex = nextProps.rowIndex;
 
     // reset scroll and render if we go from now rows to rows
-    if(oldRowIndex && oldRowIndex.length === 0 && newRowIndex && newRowIndex.length > 0){
+    if (oldRowIndex && oldRowIndex.length === 0 && newRowIndex && newRowIndex.length > 0) {
       this.setState(this._initialState);
-      this._initScroll = true
+      this._initScroll = true;
     }
 
     // detect prepend and adjust listOffset if necessary
     else if (oldRowIndex[0] !== newRowIndex[0]) {
-      var prependedMessageCount =
-            Immutable
-              .List(newRowIndex)
-              .takeUntil(function (ref) {
-                return oldRowIndex[0] === ref
-              })
-              .count()
+        var prependedMessageCount = Immutable.List(newRowIndex).takeUntil(function (ref) {
+          return oldRowIndex[0] === ref;
+        }).count();
 
-      //@TODO discuss, how best to seek front, and how to set threshold
-      var containerEl = this.refs.root.getDOMNode()
-      var seekFrontThreshold = 20
-      if( (!this.props.reverse && containerEl.scrollTop < seekFrontThreshold) || (this.props.reverse && containerEl.scrollTop + containerEl.offsetHeight > containerEl.scrollHeight-seekFrontThreshold) ){
-        this._seekFront = true
+        //@TODO discuss, how best to seek front, and how to set threshold
+        var containerEl = this.refs.root.getDOMNode();
+        var seekFrontThreshold = 20;
+        if (!this.props.reverse && containerEl.scrollTop < seekFrontThreshold || this.props.reverse && containerEl.scrollTop + containerEl.offsetHeight > containerEl.scrollHeight - seekFrontThreshold) {
+          this._seekFront = true;
+        }
+
+        //@TODO should detect if old message root is not in new row index and handle...
+        this.setState({
+          listOffset: this.state.listOffset + (this._seekFront ? 0 : prependedMessageCount),
+          cursorRef: this.state.cursorRef + prependedMessageCount
+        });
+
+        this._prependOffset = prependedMessageCount;
+      } else if (oldRowIndex[oldRowIndex.length - 1] !== newRowIndex[newRowIndex.length - 1]) {
+        this.setState({ listOffset: this.state.listOffset + 1 });
       }
-
-      //@TODO should detect if old message root is not in new row index and handle...
-      this.setState({
-        listOffset: this.state.listOffset + (this._seekFront ? 0 : prependedMessageCount),
-        cursorRef: this.state.cursorRef + prependedMessageCount,
-      })
-
-      this._prependOffset = prependedMessageCount
-
-
-
-    }
-
-    else if (oldRowIndex[oldRowIndex.length - 1] !== newRowIndex[newRowIndex.length - 1]) {
-      this.setState({listOffset: this.state.listOffset + 1})
-    }
 
     //@TODO more elegant handling?
     //this._scrollAfterUpdate = true
 
     if (this.props.renderCount >= newRowIndex.length) {
-      process.nextTick(this.props.onEndReached)
+      process.nextTick(this.props.onEndReached);
     }
-
   },
 
-  shouldComponentUpdate: function(nextProps, nextState){
+  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
     //@TODO: implement to prevent uncessary renders on prop changes
-    return true
+    return true;
   },
 
-  componentDidMount: function() {
-    this._handleScroll = _.throttle(this._handleScroll, this.props.throttle)
-    this._initScrollTop()
+  componentDidMount: function componentDidMount() {
+    this._handleScroll = _.throttle(this._handleScroll, this.props.throttle);
+    this._initScrollTop();
   },
 
-  componentWillUpdate: function(nextProps, nextState){
-    if (nextState.cursorRef){
-      var containerEl = this.getDOMNode()
-      var refOffset = this._prependOffset || 0
+  componentWillUpdate: function componentWillUpdate(nextProps, nextState) {
+    if (nextState.cursorRef) {
+      var containerEl = this.getDOMNode();
+      var refOffset = this._prependOffset || 0;
       this._prependOffset = 0;
-      this._targetCursorOffset = this.refs[nextState.cursorRef - refOffset].getDOMNode().offsetTop - containerEl.scrollTop
+      this._targetCursorOffset = this.refs[nextState.cursorRef - refOffset].getDOMNode().offsetTop - containerEl.scrollTop;
     }
   },
 
-  componentDidUpdate: function(prevProps, prevState){
+  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
 
-    if (this.state.cursorRef){
+    if (this.state.cursorRef) {
       var containerEl = this.getDOMNode();
-      var currentCursorOffset = this.refs[this.state.cursorRef].getDOMNode().offsetTop - containerEl.scrollTop
-      var adjustment = currentCursorOffset - this._targetCursorOffset
-      containerEl.scrollTop += adjustment
+      var currentCursorOffset = this.refs[this.state.cursorRef].getDOMNode().offsetTop - containerEl.scrollTop;
+      var adjustment = currentCursorOffset - this._targetCursorOffset;
+      containerEl.scrollTop += adjustment;
     }
 
     if (this._initScroll) {
@@ -288,62 +287,81 @@ var Everscroll = React.createClass({
     }
 
     //@TODO possible only call when requested instead of every update
-    if(this._scrollAfterUpdate){
-      this._handleScroll()
-      this._scrollAfterUpdate = false
+    if (this._scrollAfterUpdate) {
+      this._handleScroll();
+      this._scrollAfterUpdate = false;
     }
 
-    if(this._seekFront){
-      containerEl.scrollTop = this.props.reverse ? containerEl.scrollHeight - containerEl.offsetHeight : 0
-      this._seekFront = false
+    if (this._seekFront) {
+      containerEl.scrollTop = this.props.reverse ? containerEl.scrollHeight - containerEl.offsetHeight : 0;
+      this._seekFront = false;
     }
 
-    this._setCursor()
+    this._setCursor();
   },
 
-  render: function() {
-    var {reverse, frontCap, backCap} = this.props
-    var {backHeight, frontHeight} = this.state
+  render: function render() {
+    var _this2 = this;
 
-    var refRange = this._getRefRange()
+    var _props2 = this.props;
+    var reverse = _props2.reverse;
+    var frontCap = _props2.frontCap;
+    var backCap = _props2.backCap;
+    var _state2 = this.state;
+    var backHeight = _state2.backHeight;
+    var frontHeight = _state2.frontHeight;
 
-    var rows = this.props.rowIndex.slice(refRange.first(), refRange.last() + 1)
-    var refs = this._getRefRenderRange().toArray()
-    var keys = this._getKeyList().map(val => "everscroll-" + val).toArray()
+    var refRange = this._getRefRange();
 
-    var [topSpacerHeight, bottomSpacerHeight] = reverse 
-      ? [backHeight, frontHeight]
-      : [frontHeight, backHeight]
+    var rows = this.props.rowIndex.slice(refRange.first(), refRange.last() + 1);
+    var refs = this._getRefRenderRange().toArray();
+    var keys = this._getKeyList().map(function (val) {
+      return "everscroll-" + val;
+    }).toArray();
+
+    var _ref = reverse ? [backHeight, frontHeight] : [frontHeight, backHeight];
+
+    var _ref2 = _slicedToArray(_ref, 2);
+
+    var topSpacerHeight = _ref2[0];
+    var bottomSpacerHeight = _ref2[1];
 
     if (reverse) {
       rows.reverse();
     }
-    
-    var renderRows = rows.map((ID, index) =>{
-      return (
-        <div style={{overflow: "hidden"}} key={keys[index]} ref={refs[index]}>
-          {this._renderRow(ID, index)}
-        </div>
-      )
-    })
 
-    return (
-      <div style={this.props.style} ref="root" className={this.props.className} key={this.props.key} onScroll={this._handleScroll}>
-        <div ref="topCap">
-          {reverse ? backCap : frontCap}
-        </div>
-        <div ref="topSpacer" style={{height: topSpacerHeight}} />
-        <div key="renderRows" ref="renderRows">
-          {renderRows}
-        </div>
-        <div ref="bottomSpacer" style={{height: bottomSpacerHeight}} />
-        <div ref="bottomCap">
-          {!reverse ? backCap : frontCap}
-        </div>
-      </div>
-    )
+    var renderRows = rows.map(function (ID, index) {
+      return React.createElement(
+        'div',
+        { style: { overflow: "hidden" }, key: keys[index], ref: refs[index] },
+        _this2._renderRow(ID, index)
+      );
+    });
+
+    return React.createElement(
+      'div',
+      { style: this.props.style, ref: 'root', className: this.props.className, key: this.props.key, onScroll: this._handleScroll },
+      React.createElement(
+        'div',
+        { ref: 'topCap' },
+        reverse ? backCap : frontCap
+      ),
+      React.createElement('div', { ref: 'topSpacer', style: { height: topSpacerHeight } }),
+      React.createElement(
+        'div',
+        { key: 'renderRows', ref: 'renderRows' },
+        renderRows
+      ),
+      React.createElement('div', { ref: 'bottomSpacer', style: { height: bottomSpacerHeight } }),
+      React.createElement(
+        'div',
+        { ref: 'bottomCap' },
+        !reverse ? backCap : frontCap
+      )
+    );
   }
 
-})
+});
 
-module.exports = Everscroll
+module.exports = Everscroll;
+
